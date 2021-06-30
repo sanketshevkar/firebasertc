@@ -55,6 +55,83 @@ body {
   font-size: 13px;
 }
 
+body {
+  margin: 1em;
+}
+
+button {
+  margin: 0.2em 0.1em;
+}
+
+.localVideo {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  background: black;
+  margin: 1em;
+  position: relative;
+}
+
+video {
+  width: 100%;
+}
+
+.remoteVideo {
+  background: white;
+  position: absolute;
+  width: 20%;
+  height: 25%;
+  top: 0px;
+  right: 0px;
+}
+
+.hangUp {
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+}
+
+.camera {
+  position: absolute;
+  bottom: 5px;
+  left: 150px;
+}
+
+.mic {
+  position: absolute;
+  bottom: 5px;
+  left: 300px;
+}
+
+.videoTag {
+  width: 100%;
+  height: 100%;
+}
+
+.roomIdSpan {
+  padding: 10px 5px 5px 0px;
+  background-color: gray;
+  color: white; 
+  border-radius: 5px;
+}
+
+.connectionState {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  color: white;
+  margin: 1rem;
+}
+
+.roomIdButton {
+  background-color: transparent;
+  border: none;
+}
+
+.display-none {
+  display: none;
+}
+
 @media (max-width: 600px) {
   body, #message {
       margin-top: 0;
@@ -65,30 +142,4 @@ body {
   body {
       border-top: 16px solid #ffa100;
   }
-}
-
-body {
-  margin: 1em;
-}
-
-button {
-  margin: 0.2em 0.1em;
-}
-
-div#videos {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-div#videos > video {
-  background: black;
-  width: 640px;
-  height: 100%;
-  display: block;
-  margin: 1em;
-}
-
-.display-none {
-  display: none;
 }

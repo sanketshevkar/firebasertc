@@ -1,19 +1,27 @@
 import './App.css';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import firebase from './firebase/index'
 import Modal from './components/Modal';
 
 function App() {
     
-  const [mediaButton, setMediaButton] = useState(false);
-  const [createRoomButton, setCreateRoomButton] = useState(true);
-  const [joinRoomButton, setJoinRoomButton] = useState(true);
-  const [hangUpButton, setHangUpButton] = useState(true);
+  const [video, setVideo] = useState(false);
+  const [audio, setAudio] = useState(false);
+  const [videoButton, setVideoButton] = useState('Turn off');
+  const [audioButton, setAudioButton] = useState('Mute');
+  const [connectionState, setConnectionState] = useState('Create / Join Room')
+  const [createRoomButton, setCreateRoomButton] = useState(false);
+  const [joinRoomButton, setJoinRoomButton] = useState(false);
   const [roomId, setRoomId] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   const localStream = useRef();
   const remoteStream = useRef();
+
+  useEffect(()=>{
+    onClickMedia();
+    alert("please use mobile internet or hotspot.")
+  }, [])
 
   const registerPeerConnectionListeners = () =>{
     console.log(peerConnection)
@@ -24,6 +32,7 @@ function App() {
   
     peerConnection.addEventListener('connectionstatechange', () => {
       console.log(`Connection state change: ${peerConnection.connectionState}`);
+      setConnectionState(peerConnection.connectionState);
     });
   
     peerConnection.addEventListener('signalingstatechange', () => {
@@ -119,6 +128,9 @@ function App() {
       });
     });
     // Listen for remote ICE candidates above
+
+    setCreateRoomButton(true);
+    setJoinRoomButton(true);
   }
 
   const joinRoom = async() =>{
@@ -196,10 +208,6 @@ function App() {
     const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
     localStream.current.srcObject = stream;
     remoteStream.current.srcObject = new MediaStream();
-    setMediaButton(true);
-    setJoinRoomButton(false);
-    setCreateRoomButton(false);
-    setHangUpButton(false);
   }
 
   const onClickHangUp = () =>{
@@ -216,22 +224,41 @@ function App() {
       peerConnection.close();
     }
 
-    localStream.current.srcObject = null;
-    remoteStream.current.srcObject = null;
-    setMediaButton(false);
-    setJoinRoomButton(true);
-    setCreateRoomButton(true);
-    setHangUpButton(true);
     setRoomId("");
+    window.location.reload();
+  }
+
+  const onClickVideo = () => {
+    if(video){
+      setVideo(false);
+      localStream.current.srcObject.getVideoTracks()[0].enabled = false;
+      setVideoButton('Turn on');
+    }else{
+      setVideo(true);
+      localStream.current.srcObject.getVideoTracks()[0].enabled = true;
+      setVideoButton('Turn off');
+    }
+  }
+
+  const onClickAudio = () => {
+    if(audio){
+      setAudio(false);
+      localStream.current.srcObject.getAudioTracks()[0].enabled = false;
+      setAudioButton('Unmute');
+    }else{
+      setAudio(true);
+      localStream.current.srcObject.getAudioTracks()[0].enabled = true;
+      setAudioButton('Mute');
+    }
+  }
+
+  const onClickCopy = () => {
+    navigator.clipboard.writeText(roomId);
   }
 
   return (
     <div className="App">
       <div id="buttons">
-    <button className="mdc-button mdc-button--raised" id="cameraBtn" disabled={mediaButton} onClick={onClickMedia}>
-        <i className="material-icons mdc-button__icon" aria-hidden="true">perm_camera_mic</i>
-        <span className="mdc-button__label">Open camera microphone</span>
-    </button>
     <button className="mdc-button mdc-button--raised" disabled={createRoomButton} id="createBtn" onClick={onClickCreateRoom}>
         <i className="material-icons mdc-button__icon" aria-hidden="true">group_add</i>
         <span className="mdc-button__label">Create room</span>
@@ -240,17 +267,34 @@ function App() {
         <i className="material-icons mdc-button__icon" aria-hidden="true">group</i>
         <span className="mdc-button__label">Join room</span>
     </button>
-    <button className="mdc-button mdc-button--raised" disabled={hangUpButton} id="hangupBtn" onClick={onClickHangUp} >
+</div>
+<div style={{marginTop: '1rem'}}>
+    <span className="roomIdSpan" id="currentRoom">
+      <button className="roomIdButton" onClick={onClickCopy}>
+        <i className="material-icons mdc-button__icon" aria-hidden="true">assignment</i>
+      </button>
+      <b>Room ID: </b> 
+      {roomId}
+      </span>
+</div>
+<div className="localVideo">
+    <video autoPlay ref={remoteStream} playsInline ></video>
+    <div className="remoteVideo">
+        <video className="videoTag" muted autoPlay playsInline ref={localStream}></video>
+    </div>
+    <span className="connectionState">{connectionState}</span>
+    <button className="mdc-button mdc-button--raised hangUp" id="hangupBtn" onClick={onClickHangUp} >
         <i className="material-icons mdc-button__icon" aria-hidden="true">close</i>
         <span className="mdc-button__label">Hangup</span>
     </button>
-</div>
-<div>
-    <span id="currentRoom">{roomId}</span>
-</div>
-<div id="videos">
-    <video id="localVideo" muted autoPlay ref={localStream} playsInline ></video>
-    <video id="remoteVideo" autoPlay playsInline ref={remoteStream}></video>
+    <button className="mdc-button mdc-button--raised camera" id="cameraBtn" onClick={onClickVideo}>
+        <i className="material-icons mdc-button__icon" aria-hidden="true">camera</i>
+        <span className="mdc-button__label">{videoButton}</span>
+    </button>
+    <button className="mdc-button mdc-button--raised mic" id="cameraBtn" onClick={onClickAudio}>
+        <i className="material-icons mdc-button__icon" aria-hidden="true">mic</i>
+        <span className="mdc-button__label">{audioButton}</span>
+    </button>
 </div>
 <Modal showModal={showModal} setShowModal={setShowModal} joinRoom={joinRoom} roomId={roomId} setRoomId={setRoomId} />
     </div>
